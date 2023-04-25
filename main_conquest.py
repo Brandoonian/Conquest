@@ -17,14 +17,11 @@ class Conquest:
             (self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("Conquest")
 
-
-
-        self.army_1 = pygame.sprite.Group()
-        self.army_2 = pygame.sprite.Group()
         self.knight = Knight(self, 'player_1')
         self.knight_2 = Knight(self, 'player_2')
-        self.army_1.add(self.knight)
-        self.army_2.add(self.knight_2)
+
+        self.current_army = pygame.sprite.Group(self.knight)
+        self.inactive_army = pygame.sprite.Group(self.knight_2)
 
         self.all_sprites = pygame.sprite.Group(self.knight, self.knight_2)
 
@@ -48,14 +45,25 @@ class Conquest:
 
     def set_current_player(self):
         if self.current_player.actions_per_turn == 0:
-            if self.current_player.name == 'player_1':
-                self.current_player = self.knight_2
-                self.inactive_player = self. knight
-                self.knight.actions_per_turn = 2
-            else:
-                self.current_player = self.knight
-                self.inactive_player = self.knight_2
-                self.knight_2.actions_per_turn = 2
+            # swap current player to inactive player
+            aux_player = self.current_player
+            self.current_player = self.inactive_player
+            self.inactive_player = aux_player
+            self.inactive_player.actions_per_turn = 2
+
+            # swap current army to inactive army
+            aux_army = self.current_army
+            self.current_army = self.inactive_army
+            self.inactive_army = aux_army
+
+            # if self.current_player.name == 'player_1':
+            #     self.current_player = self.knight_2
+            #     self.inactive_player = self. knight
+            #     self.knight.actions_per_turn = 2
+            # else:
+            #     self.current_player = self.knight
+            #     self.inactive_player = self.knight_2
+            #     self.knight_2.actions_per_turn = 2
 
     def process_input(self):
         for event in pygame.event.get():
@@ -88,10 +96,9 @@ class Conquest:
                         self.current_player.collision_RIGHT()
 
     def process_collision(self):
-        self.collision = pygame.sprite.spritecollide(self.current_player, self.army_1, False, pygame.sprite.collide_rect)
-        print(self.collision)
+        collision = pygame.sprite.spritecollide(self.current_player, self.inactive_army, False, pygame.sprite.collide_rect)
 
-        if self.collision:
+        if collision:
             self.inactive_player.HP = self.inactive_player.HP + self.current_player.attack
             print(f"{self.inactive_player.name} HP: {self.inactive_player.HP}")
             return True
@@ -128,12 +135,7 @@ class Conquest:
     def update_screen(self):
         """Update images on the screen, and flip to the new screen."""
         self.screen.fill(self.settings.bg_color)
-
-        self.knight.blitme()
-        self.knight.draw_range()
-
-        self.knight_2.blitme()
-        self.knight_2.draw_range()
+        self.all_sprites.draw(self.screen)
 
         self.draw_grid()
 

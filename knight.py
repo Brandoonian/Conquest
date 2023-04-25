@@ -31,6 +31,8 @@ class Knight(Sprite):
             self.attack_range = pygame.Rect((self.rect.left - 100), (self.rect.top - 100), 300, 300)
 
     def update(self):
+        self.blitme()
+        self.draw_range()
         self.check_hp()
 
     def check_hp(self):
